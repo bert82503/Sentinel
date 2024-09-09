@@ -76,6 +76,7 @@
         <module>sentinel-logging</module>
 
         <module>sentinel-dashboard</module>
+        <module>sentinel-dashboard-apollo</module>
 
         <module>sentinel-demo</module>
         <module>sentinel-benchmark</module>
@@ -286,7 +287,7 @@
                     <execution>
                         <id>default-compile</id>
                         <configuration>
-                            <release>17</release>
+                            <release>1.8</release>
                         </configuration>
                     </execution>
                     <execution>
