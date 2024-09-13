@@ -32,6 +32,9 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
      */
     private final ApolloOpenApiClient apolloOpenApiClient;
     private final ApolloProperties apolloProperties;
+    /**
+     * 规则实体类型
+     */
     private final Class<T> ruleEntityType;
 
     protected AbstractApolloRuleService(
@@ -40,7 +43,7 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
     ) {
         this.apolloOpenApiClient = apolloOpenApiClient;
         this.apolloProperties = apolloProperties;
-        this.ruleEntityType = this.getRuleEntityType();
+        this.ruleEntityType = this.ruleEntityType();
     }
 
     protected ApolloProperties getApolloProperties() {

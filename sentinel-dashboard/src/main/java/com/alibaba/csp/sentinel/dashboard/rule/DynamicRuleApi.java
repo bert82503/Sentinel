@@ -19,7 +19,7 @@ public interface DynamicRuleApi<T extends RuleEntity>
      * @return 规则实体的泛化类型
      */
     @SuppressWarnings("unchecked")
-    default Class<T> getRuleEntityType() {
+    default Class<T> ruleEntityType() {
         // 获取泛型类型T的Class对象
         ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
         if (genericSuperclass == null) {
