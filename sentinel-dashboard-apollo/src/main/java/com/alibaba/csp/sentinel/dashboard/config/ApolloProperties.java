@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.ctrip.framework.apollo.core.ConfigConsts;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -11,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Apollo配置中心的属性配置
+ * <pre>
+ * <a href="https://www.apolloconfig.com/#/zh/design/apollo-introduction">Apollo配置中心介绍</a>
+ * </pre>
  *
  * @since 2024/9/3
  */
@@ -50,11 +54,14 @@ public class ApolloProperties {
     /**
      * 集群名称
      */
-    private String clusterName = "default";
+    private String clusterName = ConfigConsts.CLUSTER_NAME_DEFAULT;
     /**
-     * 命名空间名称
+     * 命名空间
+     * <pre>
+     * <a href="https://www.apolloconfig.com/#/zh/design/apollo-core-concept-namespace">Apollo核心概念之“Namespace”</a>
+     * </pre>
      */
-    private String namespaceName = "application";
+    private String namespaceName = ConfigConsts.NAMESPACE_APPLICATION;
     /**
      * 数据身份的后缀
      */

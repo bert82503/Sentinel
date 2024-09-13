@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.rule.apollo;
 
+import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
@@ -10,11 +11,11 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleApi;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.fastjson2.JSON;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
-import com.google.gson.reflect.TypeToken;
 
 import static com.alibaba.csp.sentinel.util.GsonUtil.GSON;
 
@@ -34,7 +35,8 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
      */
     private final ApolloOpenApiClient apolloOpenApiClient;
     private final ApolloProperties apolloProperties;
-//    private final Class<T> ruleEntityClass;
+    private final Class<T> ruleEntityType;
+    private final Type ruleEntityListType;
 
     protected AbstractApolloRuleService(
             ApolloOpenApiClient apolloOpenApiClient,
@@ -42,7 +44,8 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
     ) {
         this.apolloOpenApiClient = apolloOpenApiClient;
         this.apolloProperties = apolloProperties;
-//        this.ruleEntityClass = getRuleEntityClass();
+        this.ruleEntityType = this.getRuleEntityType();
+        this.ruleEntityListType = this.getRuleEntityListType();
     }
 
     /**
@@ -62,7 +65,7 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
         String appId = apolloProperties.appId(appName);
         // 规则数据ID
         String ruleDataId = appName + this.getDataIdSuffix();
-        // 环境、集群名称、命名空间名称
+        // 环境、集群名称、命名空间
         OpenNamespaceDTO namespace = apolloOpenApiClient.getNamespace(
                 appId, apolloProperties.getEnv(),
                 apolloProperties.getClusterName(), apolloProperties.getNamespaceName());
@@ -74,12 +77,12 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
         if (StringUtil.isEmpty(rulesJson)) {
             return Collections.emptyList();
         }
-        return fromJson(rulesJson);
+        return JSON.parseArray(rulesJson, ruleEntityType);
+//        return fromJson(rulesJson);
     }
 
     private List<T> fromJson(String json) {
-        return GSON.fromJson(json, new TypeToken<List<T>>() {
-        }.getType());
+        return GSON.fromJson(json, ruleEntityListType);
     }
 
     @Override
@@ -90,12 +93,13 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
         }
         // 应用ID
         String appId = apolloProperties.appId(appName);
-        // Increase the configuration
         // 规则数据ID
         String ruleDataId = appName + this.getDataIdSuffix();
+        // Increase the configuration
         OpenItemDTO item = new OpenItemDTO();
         item.setKey(ruleDataId);
-        item.setValue(GSON.toJson(rules));
+//        item.setValue(GSON.toJson(rules));
+        item.setValue(JSON.toJSONString(rules));
         item.setComment(EDITOR + " auto-join");
         item.setDataChangeCreatedBy(EDITOR);
 //        item.setDataChangeCreatedTime(Date.from(Instant.now()));
