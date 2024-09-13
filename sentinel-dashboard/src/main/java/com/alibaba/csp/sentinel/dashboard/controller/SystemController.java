@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
@@ -22,11 +23,12 @@ import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleApi;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+//import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 
 import org.slf4j.Logger;
@@ -47,8 +49,10 @@ public class SystemController {
 
     @Autowired
     private RuleRepository<SystemRuleEntity, Long> repository;
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
+    //    @Autowired
+//    private SentinelApiClient sentinelApiClient;
+    @Resource
+    private DynamicRuleApi<SystemRuleEntity> dynamicRuleApi;
     @Autowired
     private AppManagement appManagement;
 
@@ -80,7 +84,8 @@ public class SystemController {
             return checkResult;
         }
         try {
-            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
+//            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
+            List<SystemRuleEntity> rules = dynamicRuleApi.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -251,6 +256,13 @@ public class SystemController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<SystemRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setSystemRuleOfMachine(app, ip, port, rules);
+//        return sentinelApiClient.setSystemRuleOfMachine(app, ip, port, rules);
+        try {
+            dynamicRuleApi.publish(app, rules);
+        } catch (Exception e) {
+            logger.error("publish system rules error, app:{}", app, e);
+            return false;
+        }
+        return true;
     }
 }
