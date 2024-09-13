@@ -57,7 +57,6 @@ public class GatewayApiController {
 
 //    @Autowired
 //    private SentinelApiClient sentinelApiClient;
-
     @Resource
     private DynamicRuleApi<ApiDefinitionEntity> dynamicRuleApi;
 
