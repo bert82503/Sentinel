@@ -15,15 +15,17 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+//import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleApi;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreakerStrategy;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -57,8 +59,10 @@ public class DegradeController {
 
     @Autowired
     private RuleRepository<DegradeRuleEntity, Long> repository;
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
+    //    @Autowired
+//    private SentinelApiClient sentinelApiClient;
+    @Resource
+    private DynamicRuleApi<DegradeRuleEntity> dynamicRuleApi;
     @Autowired
     private AppManagement appManagement;
 
@@ -78,7 +82,8 @@ public class DegradeController {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         try {
-            List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfMachine(app, ip, port);
+//            List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfMachine(app, ip, port);
+            List<DegradeRuleEntity> rules = dynamicRuleApi.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -169,7 +174,14 @@ public class DegradeController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<DegradeRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setDegradeRuleOfMachine(app, ip, port, rules);
+//        return sentinelApiClient.setDegradeRuleOfMachine(app, ip, port, rules);
+        try {
+            dynamicRuleApi.publish(app, rules);
+        } catch (Exception e) {
+            logger.error("publish degrade rules error, app:{}", app, e);
+            return false;
+        }
+        return true;
     }
 
     private <R> Result<R> checkEntityInternal(DegradeRuleEntity entity) {
