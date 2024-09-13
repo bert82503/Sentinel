@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -24,9 +25,10 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleApi;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+//import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
@@ -61,8 +63,11 @@ public class FlowControllerV1 {
     @Autowired
     private AppManagement appManagement;
 
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
+//    @Autowired
+//    private SentinelApiClient sentinelApiClient;
+
+    @Resource
+    private DynamicRuleApi<FlowRuleEntity> dynamicRuleApi;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -82,7 +87,8 @@ public class FlowControllerV1 {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         try {
-            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+//            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+            List<FlowRuleEntity> rules = dynamicRuleApi.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -276,6 +282,16 @@ public class FlowControllerV1 {
 
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {
         List<FlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setFlowRuleOfMachineAsync(app, ip, port, rules);
+//        return sentinelApiClient.setFlowRuleOfMachineAsync(app, ip, port, rules);
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        try {
+            dynamicRuleApi.publish(app, rules);
+        } catch (Exception e) {
+            logger.error("publish flow rules error, app:{}", app, e);
+            future.completeExceptionally(e);
+            return future;
+        }
+        future.complete(null);
+        return future;
     }
 }
