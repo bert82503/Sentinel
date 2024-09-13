@@ -24,7 +24,7 @@ public class SystemRuleService extends AbstractApolloRuleService<SystemRuleEntit
     }
 
     @Override
-    protected String getDataIdSuffix() {
+    protected String dataIdSuffix() {
         return getApolloProperties().getDataIdSuffix().getSystemRule();
     }
 }

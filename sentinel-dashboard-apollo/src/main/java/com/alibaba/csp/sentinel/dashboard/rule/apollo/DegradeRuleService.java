@@ -24,7 +24,7 @@ public class DegradeRuleService extends AbstractApolloRuleService<DegradeRuleEnt
     }
 
     @Override
-    protected String getDataIdSuffix() {
+    protected String dataIdSuffix() {
         return getApolloProperties().getDataIdSuffix().getDegradeRule();
     }
 }

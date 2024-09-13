@@ -26,7 +26,7 @@ public class GatewayFlowRuleService extends AbstractApolloRuleService<GatewayFlo
     }
 
     @Override
-    protected String getDataIdSuffix() {
+    protected String dataIdSuffix() {
         return getApolloProperties().getDataIdSuffix().getGatewayFlowRule();
     }
 }

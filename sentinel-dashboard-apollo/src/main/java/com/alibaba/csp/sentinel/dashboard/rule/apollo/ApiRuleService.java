@@ -24,7 +24,7 @@ public class ApiRuleService extends AbstractApolloRuleService<ApiDefinitionEntit
     }
 
     @Override
-    protected String getDataIdSuffix() {
+    protected String dataIdSuffix() {
         return getApolloProperties().getDataIdSuffix().getApiRule();
     }
 }

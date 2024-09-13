@@ -24,7 +24,7 @@ public class ParamFlowRuleService extends AbstractApolloRuleService<ParamFlowRul
     }
 
     @Override
-    protected String getDataIdSuffix() {
+    protected String dataIdSuffix() {
         return getApolloProperties().getDataIdSuffix().getParamFlowRule();
     }
 }

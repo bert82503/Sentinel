@@ -26,7 +26,7 @@ public class FlowRuleService extends AbstractApolloRuleService<FlowRuleEntity> {
     }
 
     @Override
-    protected String getDataIdSuffix() {
+    protected String dataIdSuffix() {
         return getApolloProperties().getDataIdSuffix().getFlowRule();
     }
 }

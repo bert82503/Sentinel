@@ -1,6 +1,5 @@
 package com.alibaba.csp.sentinel.dashboard.rule.apollo;
 
-import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
@@ -16,8 +15,6 @@ import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
-
-import static com.alibaba.csp.sentinel.util.GsonUtil.GSON;
 
 /**
  * Apollo配置中心规则服务的抽象框架
@@ -36,7 +33,6 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
     private final ApolloOpenApiClient apolloOpenApiClient;
     private final ApolloProperties apolloProperties;
     private final Class<T> ruleEntityType;
-    private final Type ruleEntityListType;
 
     protected AbstractApolloRuleService(
             ApolloOpenApiClient apolloOpenApiClient,
@@ -45,7 +41,10 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
         this.apolloOpenApiClient = apolloOpenApiClient;
         this.apolloProperties = apolloProperties;
         this.ruleEntityType = this.getRuleEntityType();
-        this.ruleEntityListType = this.getRuleEntityListType();
+    }
+
+    protected ApolloProperties getApolloProperties() {
+        return apolloProperties;
     }
 
     /**
@@ -53,24 +52,22 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
      *
      * @return 数据身份的后缀
      */
-    protected abstract String getDataIdSuffix();
-
-    protected ApolloProperties getApolloProperties() {
-        return apolloProperties;
-    }
+    protected abstract String dataIdSuffix();
 
     @Override
-    public List<T> getRules(String appName) throws Exception {
+    public List<T> getRules(String appName) {
         // 应用ID
         String appId = apolloProperties.appId(appName);
-        // 规则数据ID
-        String ruleDataId = appName + this.getDataIdSuffix();
+        // 数据ID
+        String dataId = appName + this.dataIdSuffix();
         // 环境、集群名称、命名空间
         OpenNamespaceDTO namespace = apolloOpenApiClient.getNamespace(
                 appId, apolloProperties.getEnv(),
                 apolloProperties.getClusterName(), apolloProperties.getNamespaceName());
-        String rulesJson = namespace.getItems().stream()
-                .filter(item -> item.getKey().equals(ruleDataId))
+        // 规则列表
+        String rulesJson = namespace.getItems()
+                .stream()
+                .filter(item -> item.getKey().equals(dataId))
                 .map(OpenItemDTO::getValue)
                 .findFirst()
                 .orElse(null);
@@ -78,27 +75,23 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
             return Collections.emptyList();
         }
         return JSON.parseArray(rulesJson, ruleEntityType);
-//        return fromJson(rulesJson);
-    }
-
-    private List<T> fromJson(String json) {
-        return GSON.fromJson(json, ruleEntityListType);
     }
 
     @Override
-    public void publish(String appName, List<T> rules) throws Exception {
-        AssertUtil.notEmpty(appName, "app name can not be empty");
+    public void publish(String appName, List<T> rules) {
+        AssertUtil.notEmpty(appName, "app name cannot be empty");
         if (rules == null) {
             return;
         }
+
         // 应用ID
         String appId = apolloProperties.appId(appName);
-        // 规则数据ID
-        String ruleDataId = appName + this.getDataIdSuffix();
+        // 数据ID
+        String dataId = appName + this.dataIdSuffix();
+
         // Increase the configuration
         OpenItemDTO item = new OpenItemDTO();
-        item.setKey(ruleDataId);
-//        item.setValue(GSON.toJson(rules));
+        item.setKey(dataId);
         item.setValue(JSON.toJSONString(rules));
         item.setComment(EDITOR + " auto-join");
         item.setDataChangeCreatedBy(EDITOR);
@@ -109,6 +102,7 @@ public abstract class AbstractApolloRuleService<T extends RuleEntity>
                 appId, apolloProperties.getEnv(),
                 apolloProperties.getClusterName(), apolloProperties.getNamespaceName(),
                 item);
+
         // Release the configuration
         NamespaceReleaseDTO namespaceRelease = new NamespaceReleaseDTO();
         namespaceRelease.setReleaseTitle(EDITOR + " modify or add configurations");

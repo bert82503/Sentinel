@@ -24,7 +24,7 @@ public class AuthorityRuleService extends AbstractApolloRuleService<AuthorityRul
     }
 
     @Override
-    protected String getDataIdSuffix() {
+    protected String dataIdSuffix() {
         return getApolloProperties().getDataIdSuffix().getAuthorityRule();
     }
 }
