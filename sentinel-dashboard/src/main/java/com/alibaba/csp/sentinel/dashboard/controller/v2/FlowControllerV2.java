@@ -67,7 +67,6 @@ public class FlowControllerV2 {
 //    @Autowired
 //    @Qualifier("flowRuleDefaultPublisher")
 //    private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
-
     @Resource
     private DynamicRuleApi<FlowRuleEntity> dynamicRuleApi;
 

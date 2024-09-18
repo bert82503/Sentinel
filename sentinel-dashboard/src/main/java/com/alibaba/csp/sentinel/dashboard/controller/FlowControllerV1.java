@@ -36,6 +36,7 @@ import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepository
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,15 +66,22 @@ public class FlowControllerV1 {
 
 //    @Autowired
 //    private SentinelApiClient sentinelApiClient;
-
     @Resource
     private DynamicRuleApi<FlowRuleEntity> dynamicRuleApi;
 
+    /**
+     * 流控规则列表
+     *
+     * @param app 应用名称
+     * @param ip 应用实例IP
+     * @return 流控规则实体列表
+     */
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
-                                                             @RequestParam String ip,
-                                                             @RequestParam Integer port) {
+    public Result<List<FlowRuleEntity>> apiQueryMachineRules(
+            @RequestParam String app,
+            @RequestParam String ip,
+            @RequestParam Integer port) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -147,9 +155,16 @@ public class FlowControllerV1 {
         return null;
     }
 
+    /**
+     * 新增流控规则
+     *
+     * @param entity 流控规则实体
+     * @return 流控规则实体
+     */
     @PostMapping("/rule")
     @AuthAction(PrivilegeType.WRITE_RULE)
-    public Result<FlowRuleEntity> apiAddFlowRule(@RequestBody FlowRuleEntity entity) {
+    public Result<FlowRuleEntity> apiAddFlowRule(
+            @RequestBody FlowRuleEntity entity) {
         Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
             return checkResult;
@@ -172,13 +187,22 @@ public class FlowControllerV1 {
         }
     }
 
+    /**
+     * 编辑流控规则
+     *
+     * @param id 规则ID
+     * @param app 应用名称
+     * @param resource 资源名称
+     * @return 流控规则实体
+     */
     @PutMapping("/save.json")
     @AuthAction(PrivilegeType.WRITE_RULE)
-    public Result<FlowRuleEntity> apiUpdateFlowRule(Long id, String app,
-                                                  String limitApp, String resource, Integer grade,
-                                                  Double count, Integer strategy, String refResource,
-                                                  Integer controlBehavior, Integer warmUpPeriodSec,
-                                                  Integer maxQueueingTimeMs) {
+    public Result<FlowRuleEntity> apiUpdateFlowRule(
+            Long id, String app,
+            String limitApp, String resource, Integer grade,
+            Double count, Integer strategy, String refResource,
+            Integer controlBehavior, Integer warmUpPeriodSec,
+            Integer maxQueueingTimeMs) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -252,6 +276,12 @@ public class FlowControllerV1 {
         }
     }
 
+    /**
+     * 删除流控规则
+     *
+     * @param id 规则ID
+     * @return 规则ID
+     */
     @DeleteMapping("/delete.json")
     @AuthAction(PrivilegeType.WRITE_RULE)
     public Result<Long> apiDeleteFlowRule(Long id) {

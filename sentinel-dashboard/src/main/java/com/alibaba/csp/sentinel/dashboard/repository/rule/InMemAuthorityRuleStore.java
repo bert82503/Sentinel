@@ -15,10 +15,11 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.rule;
 
-import java.util.concurrent.atomic.AtomicLong;
+//import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,10 +31,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class InMemAuthorityRuleStore extends InMemoryRuleRepositoryAdapter<AuthorityRuleEntity> {
 
-    private static AtomicLong ids = new AtomicLong(0);
+//    private static AtomicLong ids = new AtomicLong(0);
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public InMemAuthorityRuleStore(
+            StringRedisTemplate stringRedisTemplate
+    ) {
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
 
     @Override
     protected long nextId() {
-        return ids.incrementAndGet();
+//        return ids.incrementAndGet();
+        Long increment = stringRedisTemplate.opsForValue().increment("sentinel:id:rule:authority");
+        return increment == null ? 0L : increment;
     }
 }

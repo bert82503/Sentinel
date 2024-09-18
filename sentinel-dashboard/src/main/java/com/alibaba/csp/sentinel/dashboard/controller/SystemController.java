@@ -49,7 +49,7 @@ public class SystemController {
 
     @Autowired
     private RuleRepository<SystemRuleEntity, Long> repository;
-    //    @Autowired
+//    @Autowired
 //    private SentinelApiClient sentinelApiClient;
     @Resource
     private DynamicRuleApi<SystemRuleEntity> dynamicRuleApi;
