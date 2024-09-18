@@ -1,0 +1,6 @@
+
+# RedisProperties
+spring:
+  redis:
+    database: 0
+    host: localhost
