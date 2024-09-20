@@ -93,32 +93,32 @@ public class ApolloProperties {
          * <p></p>
          * 影响范围：单个节点流控
          */
-        private final String flowRule = "-sentinel.flowRules";
+        private final String flowRule = ".sentinel.flowRules";
         /**
          * 网关流控规则
          * <p></p>
          * 影响范围：整个集群流控
          */
-        private final String gatewayFlowRule = "-sentinel.gatewayFlowRules";
+        private final String gatewayFlowRule = ".sentinel.gatewayFlowRules";
         /**
          * 参数化流控规则
          */
-        private final String paramFlowRule = "-sentinel.paramFlowRules";
+        private final String paramFlowRule = ".sentinel.paramFlowRules";
         /**
          * 降级规则
          */
-        private final String degradeRule = "-sentinel.degradeRules";
+        private final String degradeRule = ".sentinel.degradeRules";
         /**
          * API规则
          */
-        private final String apiRule = "-sentinel.apiRules";
+        private final String apiRule = ".sentinel.apiRules";
         /**
          * 授权规则
          */
-        private final String authorityRule = "-sentinel.authorityRules";
+        private final String authorityRule = ".sentinel.authorityRules";
         /**
          * 系统规则
          */
-        private final String systemRule = "-sentinel.systemRules";
+        private final String systemRule = ".sentinel.systemRules";
     }
 }
