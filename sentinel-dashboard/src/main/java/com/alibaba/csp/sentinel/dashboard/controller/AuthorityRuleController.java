@@ -15,14 +15,16 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+//import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleApi;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -53,8 +55,10 @@ public class AuthorityRuleController {
 
     private final Logger logger = LoggerFactory.getLogger(AuthorityRuleController.class);
 
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
+//    @Autowired
+//    private SentinelApiClient sentinelApiClient;
+    @Resource
+    private DynamicRuleApi<AuthorityRuleEntity> dynamicRuleApi;
     @Autowired
     private RuleRepository<AuthorityRuleEntity, Long> repository;
     @Autowired
@@ -78,7 +82,8 @@ public class AuthorityRuleController {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         try {
-            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
+//            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
+            List<AuthorityRuleEntity> rules = dynamicRuleApi.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -192,6 +197,13 @@ public class AuthorityRuleController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<AuthorityRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setAuthorityRuleOfMachine(app, ip, port, rules);
+//        return sentinelApiClient.setAuthorityRuleOfMachine(app, ip, port, rules);
+        try {
+            dynamicRuleApi.publish(app, rules);
+        } catch (Exception e) {
+            logger.error("publish authority rules error, app:{}", app, e);
+            return false;
+        }
+        return true;
     }
 }

@@ -1,0 +1,14 @@
+
+server:
+  port: 8081
+
+csp:
+  sentinel:
+    dashboard:
+      server: localhost:8081
+
+apollo:
+  env: DEV
+  portal-url: http://localhost:8070
+  token: 3101cd4c2a89d446e49fe4e58661ac74008e49a8f027e2eb49a57ed67c41caa3
+

@@ -1,0 +1,7 @@
+
+# RedisProperties
+spring:
+  redis:
+    database: 4
+    host: 172.16.150.98
+    password: GxhEaYuDcj

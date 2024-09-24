@@ -17,9 +17,11 @@ package com.alibaba.csp.sentinel.dashboard.repository.gateway;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.atomic.AtomicLong;
+//import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Store {@link GatewayFlowRuleEntity} in memory.
@@ -30,10 +32,19 @@ import java.util.concurrent.atomic.AtomicLong;
 @Component
 public class InMemGatewayFlowRuleStore extends InMemoryRuleRepositoryAdapter<GatewayFlowRuleEntity> {
 
-    private static AtomicLong ids = new AtomicLong(0);
+//    private static AtomicLong ids = new AtomicLong(0);
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public InMemGatewayFlowRuleStore(
+            StringRedisTemplate stringRedisTemplate
+    ) {
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
 
     @Override
     protected long nextId() {
-        return ids.incrementAndGet();
+//        return ids.incrementAndGet();
+        Long increment = stringRedisTemplate.opsForValue().increment("sentinel:id:rule:gateway.flow");
+        return increment == null ? 0L : increment;
     }
 }
